@@ -24,18 +24,25 @@ import { db } from '@/lib/db'
 export async function getNextFlight(): Promise<Flight | null> {
   const now = new Date()
 
-  const flight = await db.flight.findFirst({
-    where: {
-      direction: 'PARIS_TO_COTONOU',
-      status: 'SCHEDULED',
-      departureDate: {
-        gt: now,
+  try {
+    const flight = await db.flight.findFirst({
+      where: {
+        direction: 'PARIS_TO_COTONOU',
+        status: 'SCHEDULED',
+        departureDate: {
+          gt: now,
+        },
       },
-    },
-    orderBy: {
-      departureDate: 'asc',
-    },
-  })
-
-  return flight
+      orderBy: {
+        departureDate: 'asc',
+      },
+    })
+    return flight
+  } catch (error) {
+    console.error(
+      'Erreur lors de la récupération du prochain vol (base de données indisponible ?) :',
+      error,
+    )
+    return null
+  }
 }
