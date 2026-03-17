@@ -82,25 +82,17 @@ describe('getNextFlight', () => {
     )
   })
 
-  it('filtre uniquement les vols avec departureDate dans le futur', async () => {
+  it('filtre uniquement les vols avec departureDate dans le futur (ou maintenant)', async () => {
     mockFindFirst.mockResolvedValueOnce(null)
     await getNextFlight()
     expect(mockFindFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          departureDate: expect.objectContaining({ gt: expect.any(Date) }),
+          departureDate: expect.objectContaining({ gte: expect.any(Date) }),
         }),
       }),
     )
   })
 
-  it('filtre uniquement la direction PARIS_TO_COTONOU', async () => {
-    mockFindFirst.mockResolvedValueOnce(null)
-    await getNextFlight()
-    expect(mockFindFirst).toHaveBeenCalledWith(
-      expect.objectContaining({
-        where: expect.objectContaining({ direction: 'PARIS_TO_COTONOU' }),
-      }),
-    )
-  })
+  // Suppression du filtre direction car la logistique SEZY est bi-directionnelle (Europe ↔ Afrique)
 })

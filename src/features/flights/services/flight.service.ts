@@ -1,48 +1,85 @@
-// src/features/flights/services/flight.service.ts
 /**
- * Flight Service — Logique métier pour les vols SEZY
+ * features/flights/services/flight.service.ts
  *
  * RESPONSABILITÉ :
- * - Encapsuler toute la logique d'accès aux données Prisma
- * - Fournir des fonctions typées et réutilisables
- * - Respecter l'architecture DOC 02 : jamais d'import Prisma dans les composants
- *
- * RÈGLES (DOC 02 & DOC 03) :
- * - Service = seul fichier qui importe { db }
- * - Fonctions async avec types de retour explicites
- * - Gestion des cas null/undefined
+ * - Logique métier pour l'affichage et la gestion des vols
+ * - Accès direct à @/lib/db pour les opérations CRUD
+ * - Filtrage des vols SCHEDULED pour l'affichage public
  */
 
-import type { Flight } from '@prisma/client'
+import { FlightStatus } from '@prisma/client'
 
 import { db } from '@/lib/db'
 
+import { FlightDisplay } from '../types'
+
 /**
- * Récupère le prochain vol programmé Paris → Cotonou
- * @returns Le prochain vol SCHEDULED ou null si aucun vol
+ * Récupère tous les vols actifs (non supprimés)
+ * Utilisé principalement pour le back-office admin
  */
-export async function getNextFlight(): Promise<Flight | null> {
+export async function getAllFlights() {
+  return await db.flight.findMany({
+    where: { deletedAt: null },
+    orderBy: { departureDate: 'asc' },
+  })
+}
+
+/**
+ * Récupère les prochains vols programmés pour l'affichage public
+ * Seuls les vols au statut SCHEDULED et dont la date de départ n'est pas passée
+ */
+export async function getUpcomingFlights(): Promise<FlightDisplay[]> {
   const now = new Date()
 
-  try {
-    const flight = await db.flight.findFirst({
-      where: {
-        direction: 'PARIS_TO_COTONOU',
-        status: 'SCHEDULED',
-        departureDate: {
-          gt: now,
-        },
-      },
-      orderBy: {
-        departureDate: 'asc',
-      },
-    })
-    return flight
-  } catch (error) {
-    console.error(
-      'Erreur lors de la récupération du prochain vol (base de données indisponible ?) :',
-      error,
-    )
-    return null
-  }
+  return await db.flight.findMany({
+    where: {
+      status: FlightStatus.SCHEDULED,
+      departureDate: { gte: now },
+      deletedAt: null,
+    },
+    orderBy: { departureDate: 'asc' },
+    select: {
+      id: true,
+      direction: true,
+      origin: true,
+      destination: true,
+      availableSpots: true,
+      departureDate: true,
+      arrivalDate: true,
+      priceEur: true,
+      priceFcfa: true,
+      status: true,
+      notes: true,
+    },
+  })
+}
+
+/**
+ * Récupère le prochain vol immédiat
+ * Utilisé pour la bannière "Prochain vol"
+ */
+export async function getNextFlight(): Promise<FlightDisplay | null> {
+  const now = new Date()
+
+  return await db.flight.findFirst({
+    where: {
+      status: FlightStatus.SCHEDULED,
+      departureDate: { gte: now },
+      deletedAt: null,
+    },
+    orderBy: { departureDate: 'asc' },
+    select: {
+      id: true,
+      direction: true,
+      origin: true,
+      destination: true,
+      availableSpots: true,
+      departureDate: true,
+      arrivalDate: true,
+      priceEur: true,
+      priceFcfa: true,
+      status: true,
+      notes: true,
+    },
+  })
 }
