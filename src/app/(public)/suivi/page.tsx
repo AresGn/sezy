@@ -61,14 +61,20 @@ export default async function SuiviPage({
 
           {/* Résultat affiché via Client Component */}
           {result && (
-            <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div
+              id="result"
+              className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500 scroll-mt-28"
+            >
               <TrackingStatus result={result} />
             </div>
           )}
 
           {/* Message si le code est dans l'URL mais n'existe pas en base */}
           {code && !result && (
-            <div className="mt-8 mx-auto max-w-2xl bg-red-50 border border-red-100 rounded-card p-6 text-center shadow-card">
+            <div
+              id="result"
+              className="mt-8 mx-auto max-w-2xl bg-red-50 border border-red-100 rounded-card p-6 text-center shadow-card scroll-mt-28"
+            >
               <p className="text-red-700 font-medium font-sans">
                 Aucun colis ne correspond au code{' '}
                 <span className="font-mono bg-white px-2 py-1 rounded inline-block mx-1 shadow-sm uppercase tracking-widest text-sm text-gray-900 border border-red-200">

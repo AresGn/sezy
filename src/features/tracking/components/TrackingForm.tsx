@@ -36,7 +36,7 @@ export default function TrackingForm({ initialCode = '' }: { initialCode?: strin
         setError(result.error)
       } else {
         // Redirection vers l'URL avec le code pour déclencher le SSR de la page "suivi"
-        router.push(`/suivi?code=${trimmedCode}`)
+        router.push(`/suivi?code=${trimmedCode}#result`)
       }
     } catch {
       setError('Une erreur inattendue est survenue.')
