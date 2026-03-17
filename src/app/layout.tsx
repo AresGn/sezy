@@ -1,33 +1,48 @@
-// src/app/layout.tsx
-import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
-import "./globals.css";
-import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
+import type { Metadata } from "next"
+import { Inter, Montserrat, JetBrains_Mono } from "next/font/google"
+import "./globals.css"
+import Header from "@/components/layout/Header"
+import Footer from "@/components/layout/Footer"
 
-const outfit = Outfit({
+const inter = Inter({
   subsets: ["latin"],
-  variable: "--font-outfit",
-});
+  variable: "--font-inter",
+  display: "swap",
+})
+
+const montserrat = Montserrat({
+  subsets: ["latin"],
+  variable: "--font-montserrat",
+  weight: ["600", "700", "800"],
+  display: "swap",
+})
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+  weight: ["400", "500", "600"],
+  display: "swap",
+})
 
 export const metadata: Metadata = {
-  title: "SEZY | Votre Passerelle de Confiance Europe-Afrique",
-  description: "Agence SEZY — Logistique Paris-Cotonou, Shopping Bien-être et Coaching Études. De ton colis à ton installation, on gère tout.",
-  keywords: ["logistique", "Paris Cotonou", "envoi colis", "étudier en France", "shopping cosmétiques"],
-};
+  title: "SEZY | Votre Passerelle Europe-Afrique",
+  description: "Logistique Paris-Cotonou, Shopping Bien-être et Études en Europe.",
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
-    <html lang="fr" className={`${outfit.variable}`}>
-      <body className="antialiased min-h-screen flex flex-col font-sans">
-        <Header />
-        <main className="flex-grow">{children}</main>
-        <Footer />
+    <html lang="fr" className={`${inter.variable} ${montserrat.variable} ${jetbrainsMono.variable}`}>
+      <body className="font-sans text-slate-700 bg-white antialiased">
+        <div className="flex flex-col min-h-screen">
+          <Header />
+          <main className="flex-grow">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
-  );
+  )
 }
