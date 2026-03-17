@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── ENUMS ────────────────────────────────────────────────────────────────────
+
+enum FlightDirection {
+  PARIS_TO_COTONOU
+  COTONOU_TO_PARIS
+}
+
+enum FlightStatus {
+  SCHEDULED
+  BOARDING
+  IN_FLIGHT
+  COMPLETED
+  CANCELLED
+}
+
+enum ParcelStatus {
+  RECEIVED_PARIS
+  IN_FLIGHT
+  ARRIVED_COTONOU
+  AVAILABLE
+}
+
+enum ProductCategory {
+  COSMETICS
+  NUTRITION
+  WELLNESS
+}
+
+enum ArticleStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum ContactSubject {
+  LOGISTICS
+  SHOPPING
+  STUDIES
+  TRACKING
+  OTHER
+}
+
+// ─── MODELS ───────────────────────────────────────────────────────────────────
+
+model Flight {
+  id             String          @id @default(cuid())
+  direction      FlightDirection
+  departureDate  DateTime
+  arrivalDate    DateTime
+  origin         String          @db.VarChar(100)
+  destination    String          @db.VarChar(100)
+  availableSpots Int             @default(0)
+  priceEur       Int             // En centimes — 2000 = 20€
+  priceFcfa      Int             // En FCFA — 10000
+  status         FlightStatus    @default(SCHEDULED)
+  notes          String?
+  deletedAt      DateTime?       // Soft delete
+
+  parcels        Parcel[]
+
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  @@index([departureDate])
+  @@index([status])
+  @@index([direction])
+  @@map("flights")
+}
+
+model Parcel {
+  id             String        @id @default(cuid())
+  trackingCode   String        @unique @db.VarChar(20)
+  senderName     String        @db.VarChar(100)
+  senderPhone    String        @db.VarChar(20)
+  recipientName  String        @db.VarChar(100)
+  recipientPhone String        @db.VarChar(20)
+  weightKg       Float
+  status         ParcelStatus  @default(RECEIVED_PARIS)
+  currentNote    String?       // Note visible par le client
+  flightId       String?       // Null si pas encore assigné à un vol
+  receivedAt     DateTime      @default(now())
+
+  flight         Flight?       @relation(fields: [flightId], references: [id])
+  statusLogs     ParcelStatusLog[]
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status])
+  @@index([flightId])
+  @@map("parcels")
+}
+
+model ParcelStatusLog {
+  id        String        @id @default(cuid())
+  parcelId  String
+  status    ParcelStatus
+  note      String?
+  loggedAt  DateTime      @default(now())
+
+  parcel    Parcel        @relation(fields: [parcelId], references: [id])
+
+  @@index([parcelId])
+  @@map("parcel_status_logs")
+}
+
+model Product {
+  id               String          @id @default(cuid())
+  name             String          @db.VarChar(255)
+  slug             String          @unique @db.VarChar(255)
+  description      String          @db.Text
+  shortDescription String          @db.VarChar(300)
+  priceFcfa        Int
+  priceEur         Int?
+  category         ProductCategory
+  imageUrl         String          @db.VarChar(500)
+  inStock          Boolean         @default(true)
+  stockQuantity    Int?            // Null = illimité
+  isFeatured       Boolean         @default(false)
+  isActive         Boolean         @default(true)
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([category])
+  @@index([isActive, inStock])
+  @@index([isFeatured])
+  @@map("products")
+}
+
+model Article {
+  id             String        @id @default(cuid())
+  title          String        @db.VarChar(255)
+  slug           String        @unique @db.VarChar(255)
+  excerpt        String        @db.VarChar(500)
+  content        String        @db.Text
+  coverImageUrl  String?       @db.VarChar(500)
+  seoTitle       String?       @db.VarChar(70)
+  seoDescription String?       @db.VarChar(160)
+  status         ArticleStatus @default(DRAFT)
+  publishedAt    DateTime?
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status, publishedAt])
+  @@map("articles")
+}
+
+model ContactMessage {
+  id        String         @id @default(cuid())
+  fullName  String         @db.VarChar(100)
+  email     String         @db.VarChar(255)
+  phone     String?        @db.VarChar(20)
+  subject   ContactSubject
+  message   String         @db.Text
+  isRead    Boolean        @default(false)
+
+  createdAt DateTime       @default(now())
+
+  @@index([isRead])
+  @@index([createdAt])
+  @@map("contact_messages")
+}
