@@ -1,112 +1,123 @@
 // src/app/(public)/page.tsx
-import Link from 'next/link';
-import Image from 'next/image';
-import { Package, ShoppingBag, GraduationCap, ArrowRight, MessageCircle } from 'lucide-react';
+/**
+ * Page d'accueil SEZY — Assemblage des sections stratégiques
+ * Async Server Component — SEO maximal avec Schema.org
+ *
+ * RESPONSABILITÉ :
+ * - Assembler les 7 sections dans l'ordre stratégique défini
+ * - Fournir les métadonnées SEO complètes
+ * - Intégrer le Schema.org LocalBusiness pour Google Maps
+ *
+ * ORDRE DES SECTIONS (stratégique et non modifiable) :
+ * 1. HeroSection — Accroche principale
+ * 2. StatsSection — Preuve sociale numérique
+ * 3. ServicesSection — Les 3 pôles SEZY
+ * 4. HowItWorksSection — Processus simplifié
+ * 5. NextFlightSection — Urgence et disponibilité
+ * 6. TestimonialsSection — Témoignages clients
+ * 7. CtaSection — Conversion finale
+ *
+ * SEO (DOC 06) :
+ * - Metadata export pour Next.js
+ * - JSON-LD Schema.org LocalBusiness
+ * - OpenGraph pour réseaux sociaux
+ *
+ * RÈGLES (DOC 02 & DOC 06) :
+ * - Async Server Component (même sans await)
+ * - Aucune logique métier — assemblage pur
+ * - Imports séparés pour chaque section
+ * - TypeScript strict
+ */
 
-export default function Home() {
+import type { Metadata } from 'next'
+
+import HeroSection from '@/features/home/components/HeroSection'
+import StatsSection from '@/features/home/components/StatsSection'
+import ServicesSection from '@/features/home/components/ServicesSection'
+import HowItWorksSection from '@/features/home/components/HowItWorksSection'
+import NextFlightSection from '@/features/flights/components/NextFlightSection'
+import TestimonialsSection from '@/features/home/components/TestimonialsSection'
+import CtaSection from '@/features/home/components/CtaSection'
+
+// Métadonnées SEO pour la page d'accueil (DOC 06)
+export const metadata: Metadata = {
+  title: 'SEZY — Envoi de colis Paris Cotonou | Shopping & Études',
+  description:
+    'Agence SEZY : envoi de colis Paris ↔ Cotonou dès 20€/kg, shopping bien-être premium et accompagnement études France/Canada. Votre passerelle de confiance Europe-Afrique.',
+  keywords: [
+    'envoi colis Paris Cotonou',
+    'agence transport Bénin France',
+    'coaching études France Bénin',
+    'cosmétiques Cotonou',
+    'logistique Paris Cotonou',
+    'shopping bien-être Bénin',
+  ],
+  openGraph: {
+    title: 'SEZY — Votre Passerelle Paris-Cotonou',
+    description: 'Colis, Shopping, Études — Tout en 1 depuis Cotonou.',
+    url: 'https://sezy.bj',
+    siteName: 'SEZY',
+    locale: 'fr_BJ',
+    type: 'website',
+  },
+  alternates: {
+    canonical: 'https://sezy.bj',
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+}
+
+// Schema.org LocalBusiness pour Google Maps (JSON-LD)
+const localBusinessJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: 'Agence SEZY',
+  description: 'Passerelle de confiance Europe-Afrique',
+  url: 'https://sezy.bj',
+  telephone: process.env.NEXT_PUBLIC_WHATSAPP_1 || '+2290142087361',
+  address: {
+    '@type': 'PostalAddress',
+    streetAddress: 'Agontikon',
+    addressLocality: 'Cotonou',
+    addressCountry: 'BJ',
+  },
+  openingHours: 'Mo-Fr 10:00-18:00',
+  sameAs: ['https://www.facebook.com/agencesezy'],
+}
+
+export default async function Home() {
   return (
     <div className="flex flex-col w-full">
-      {/* SECTION HERO - DOC 09 4.2 */}
-      <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center">
-        {/* L'image de fond doit être optimisée avec next/image - VIS-006 */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-sezy-navy/75 z-10" /> {/* Overlay VIS-007 */}
-          <div className="relative w-full h-full bg-slate-900">
-             {/* Placeholder pour l'image réelle qui sera ajoutée plus tard */}
-          </div>
-        </div>
+      {/* JSON-LD Schema.org LocalBusiness */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(localBusinessJsonLd),
+        }}
+      />
 
-        <div className="relative z-20 max-w-7xl mx-auto px-4 text-center text-white">
-          <h1 className="text-4xl md:text-6xl font-extrabold leading-tight mb-6">
-            Votre Passerelle de Confiance
-            <span className="block text-logistics">Europe — Afrique</span>
-          </h1>
-          <p className="text-lg md:text-xl text-white/80 max-w-2xl mx-auto mb-8 font-sans">
-            Colis, Shopping, Études — De Paris à Cotonou, on gère tout.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link href="/logistique"
-              className="bg-logistics hover:bg-logistics-dark text-white font-semibold px-8 py-4 rounded-btn transition-colors">
-              Calculer mon tarif
-            </Link>
-            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_1?.replace('+', '')}`}
-              className="bg-whatsapp hover:bg-whatsapp-dark text-white font-semibold px-8 py-4 rounded-btn flex items-center justify-center gap-2 transition-colors">
-              <MessageCircle className="w-5 h-5" />
-              Nous contacter
-            </a>
-          </div>
-        </div>
-      </section>
+      {/* 1. HERO SECTION — Accroche principale */}
+      <HeroSection />
 
-      {/* SECTION SERVICES - 3 PÔLES (DOC 09 3.2) */}
-      <section className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Nos Pôles d'Excellence</h2>
-            <p className="text-slate-500 max-w-2xl mx-auto">Trois domaines d'expertise pour faciliter vos échanges entre la France et le Bénin.</p>
-          </div>
+      {/* 2. STATS SECTION — Preuve sociale numérique */}
+      <StatsSection />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* PÔLE LOGISTIQUE */}
-            <div className="bg-white rounded-card shadow-card hover:shadow-card-hover p-8 transition-all border border-slate-100 group">
-              <div className="w-14 h-14 rounded-full bg-logistics-bg flex items-center justify-center mb-6 text-logistics group-hover:bg-logistics group-hover:text-white transition-colors">
-                <Package size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Logistique & Transport</h3>
-              <p className="text-slate-500 mb-6 leading-relaxed">
-                Transport de colis Paris ↔ Cotonou. Fret aérien régulier, sécurisé et rapide à partir de <span className="font-mono font-semibold text-logistics">20€/kg</span>.
-              </p>
-              <Link href="/logistique" className="inline-flex items-center text-logistics font-semibold hover:gap-2 transition-all">
-                Détails du service <ArrowRight size={18} className="ml-2" />
-              </Link>
-            </div>
+      {/* 3. SERVICES SECTION — Les 3 pôles SEZY */}
+      <ServicesSection />
 
-            {/* PÔLE SHOPPING */}
-            <div className="bg-white rounded-card shadow-card hover:shadow-card-hover p-8 transition-all border border-slate-100 group">
-              <div className="w-14 h-14 rounded-full bg-shopping-bg flex items-center justify-center mb-6 text-shopping group-hover:bg-shopping group-hover:text-white transition-colors">
-                <ShoppingBag size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Shopping & Bien-être</h3>
-              <p className="text-slate-500 mb-6 leading-relaxed">
-                Produits bio et naturels (Maca, Baies de Goji). Commandez vos produits préférés et recevez-les directement au Bénin.
-              </p>
-              <Link href="/shopping" className="inline-flex items-center text-shopping font-semibold hover:gap-2 transition-all">
-                Voir la boutique <ArrowRight size={18} className="ml-2" />
-              </Link>
-            </div>
+      {/* 4. HOW IT WORKS — Processus simplifié */}
+      <HowItWorksSection />
 
-            {/* PÔLE ÉTUDES */}
-            <div className="bg-white rounded-card shadow-card hover:shadow-card-hover p-8 transition-all border border-slate-100 group">
-              <div className="w-14 h-14 rounded-full bg-studies-bg flex items-center justify-center mb-6 text-studies group-hover:bg-studies group-hover:text-white transition-colors">
-                <GraduationCap size={28} />
-              </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-3">Études & Carrière</h3>
-              <p className="text-slate-500 mb-6 leading-relaxed">
-                Accompagnement personnalisé pour vos projets d'études en Europe. Orientation, inscription et préparation au départ.
-              </p>
-              <Link href="/etudes" className="inline-flex items-center text-studies font-semibold hover:gap-2 transition-all">
-                En savoir plus <ArrowRight size={18} className="ml-2" />
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* 5. NEXT FLIGHT — Urgence et disponibilité */}
+      <NextFlightSection />
 
-      {/* CTA SECTION */}
-      <section className="py-20 bg-sezy-navy text-white text-center">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Prêt à envoyer votre colis ?</h2>
-          <p className="text-white/80 text-lg mb-10">Rejoignez des centaines de clients qui font confiance à SEZY pour leurs envois entre la France et le Bénin.</p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/suivi" className="bg-white text-sezy-navy px-8 py-4 rounded-btn font-bold hover:bg-slate-100 transition-colors">
-              Suivre un colis existant
-            </Link>
-            <a href={`https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_1?.replace('+', '')}`} className="bg-whatsapp hover:bg-whatsapp-dark text-white px-8 py-4 rounded-btn font-bold flex items-center gap-2 transition-colors">
-              <MessageCircle size={20} /> Programmer un envoi
-            </a>
-          </div>
-        </div>
-      </section>
+      {/* 6. TESTIMONIALS — Preuve sociale */}
+      <TestimonialsSection />
+
+      {/* 7. CTA FINAL — Conversion */}
+      <CtaSection />
     </div>
-  );
+  )
 }

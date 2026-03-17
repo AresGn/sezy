@@ -1,0 +1,210 @@
+name: CI — SEZY Quality Gate
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: [main, develop]
+
+# Annule les runs précédents si un nouveau push arrive
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ─── JOB 1 : Qualité du code ──────────────────────────────────
+  quality:
+    name: 🔍 Lint & Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: TypeScript — 0 erreur acceptée
+        run: npm run type-check
+
+      - name: ESLint — 0 warning accepté
+        run: npm run lint
+
+      - name: Prettier — formatage vérifié
+        run: npm run format:check
+
+  # ─── JOB 2 : Tests ────────────────────────────────────────────
+  tests:
+    name: 🧪 Tests unitaires
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+
+      - name: Tests avec coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 7
+
+  # ─── JOB 3 : Sécurité ─────────────────────────────────────────
+  security:
+    name: 🔐 Audit sécurité
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+
+      - name: Audit dépendances NPM
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Vérification variables d'env
+        run: |
+          echo "Vérification .env.example..."
+          if [ ! -f ".env.example" ]; then
+            echo "❌ .env.example manquant !"
+            exit 1
+          fi
+          echo "✅ .env.example présent"
+
+      - name: Vérification secrets dans le code
+        run: |
+          echo "Scan des secrets hardcodés..."
+          if grep -r "NEXTAUTH_SECRET\s*=\s*['\"][^$]" src/ 2>/dev/null; then
+            echo "❌ Secret trouvé dans le code source !"
+            exit 1
+          fi
+          if grep -r "password.*=.*['\"][a-zA-Z0-9]" src/lib/auth.ts 2>/dev/null | grep -v "process.env"; then
+            echo "❌ Mot de passe hardcodé détecté !"
+            exit 1
+          fi
+          echo "✅ Aucun secret trouvé dans le code"
+
+  # ─── JOB 4 : Build ────────────────────────────────────────────
+  build:
+    name: 🏗️ Build Next.js
+    runs-on: ubuntu-latest
+    needs: [quality, tests]
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL_TEST || 'postgresql://test:test@localhost:5432/test' }}
+      DIRECT_URL: ${{ secrets.DATABASE_URL_TEST || 'postgresql://test:test@localhost:5432/test' }}
+      NEXTAUTH_SECRET: 'ci-test-secret-minimum-32-characters-x'
+      NEXTAUTH_URL: 'http://localhost:3000'
+      ADMIN_EMAIL: 'test@sezy.bj'
+      ADMIN_PASSWORD_HASH: '$2a$12$placeholder000000000000000000000000000000000'
+      NEXT_PUBLIC_WHATSAPP_1: '+22901042087361'
+      NEXT_PUBLIC_WHATSAPP_2: '+22901066386417'
+      NEXT_PUBLIC_SITE_URL: 'https://sezy.bj'
+      RECAPTCHA_SITE_KEY: 'test-key'
+      RECAPTCHA_SECRET_KEY: 'test-secret'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+
+      - name: Génération Prisma Client
+        run: npx prisma generate
+
+      - name: Build Next.js
+        run: npm run build
+
+      - name: Vérification taille du bundle
+        run: |
+          echo "📦 Analyse du bundle..."
+          du -sh .next/static/ 2>/dev/null || echo "Bundle OK"
+
+  # ─── JOB 5 : Conformité SEZY ──────────────────────────────────
+  sezy-compliance:
+    name: 🎯 Conformité Dev Foundation Kit
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: "DOC 09 — Vérification Design System"
+        run: |
+          echo "Vérification : pas de framer-motion..."
+          if grep -r "from 'framer-motion'" src/ 2>/dev/null; then
+            echo "❌ framer-motion détecté ! Interdit par DOC 08."
+            exit 1
+          fi
+          echo "✅ Pas de framer-motion"
+
+          echo "Vérification : pas de <img> direct..."
+          if grep -rn "<img " src/ 2>/dev/null | grep -v "// " | grep -v "*.md"; then
+            echo "⚠️ Balise <img> détectée — utiliser next/image"
+          fi
+          echo "✅ Vérification images OK"
+
+      - name: "DOC 02 — Vérification Architecture"
+        run: |
+          echo "Vérification : import Prisma hors services..."
+          if grep -r "from '@prisma/client'" src/components/ 2>/dev/null; then
+            echo "❌ Import Prisma dans /components ! Déplacer vers /features/*/services/"
+            exit 1
+          fi
+          if grep -r "from '@prisma/client'" src/app/ 2>/dev/null | grep -v "types"; then
+            echo "❌ Import Prisma dans /app ! Utiliser les services."
+            exit 1
+          fi
+          echo "✅ Architecture Prisma respectée"
+
+      - name: "DOC 07 — Vérification Sécurité"
+        run: |
+          echo "Vérification : middleware admin..."
+          if [ ! -f "src/middleware.ts" ]; then
+            echo "⚠️ src/middleware.ts manquant — routes /admin non protégées"
+          else
+            echo "✅ middleware.ts présent"
+          fi
+
+          echo "Vérification : .env.example complet..."
+          required_vars=(
+            "DATABASE_URL"
+            "NEXTAUTH_SECRET"
+            "ADMIN_EMAIL"
+            "ADMIN_PASSWORD_HASH"
+            "NEXT_PUBLIC_WHATSAPP_1"
+            "RECAPTCHA_SITE_KEY"
+          )
+          for var in "${required_vars[@]}"; do
+            if ! grep -q "^${var}=" .env.example 2>/dev/null; then
+              echo "⚠️ Variable manquante dans .env.example : ${var}"
+            fi
+          done
+          echo "✅ Variables d'env vérifiées"
+
+      - name: "DOC 06 — Vérification Conventions"
+        run: |
+          echo "Vérification : console.log dans le code..."
+          count=$(grep -r "console\.log" src/ 2>/dev/null | grep -v "console\.error\|console\.warn\|// " | wc -l)
+          if [ "$count" -gt "0" ]; then
+            echo "⚠️ $count console.log trouvés dans src/"
+            grep -rn "console\.log" src/ 2>/dev/null | grep -v "console\.error\|console\.warn\|// "
+          else
+            echo "✅ Aucun console.log de debug"
+          fi

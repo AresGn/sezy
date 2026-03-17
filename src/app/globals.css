@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @config "../../tailwind.config.ts";
 
@@ -13,8 +13,12 @@
   body {
     @apply font-sans text-slate-700 bg-white;
   }
-  
-  h1, h2, h3, h4, .font-heading {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-heading {
     @apply font-heading;
   }
 }
@@ -29,9 +33,42 @@
 }
 
 @utility shadow-card {
-  box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.06), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  box-shadow:
+    0 1px 3px 0 rgb(0 0 0 / 0.06),
+    0 1px 2px -1px rgb(0 0 0 / 0.06);
 }
 
 @utility shadow-card-hover {
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+@utility animate-delay-100 {
+  animation-delay: 0.1s;
+}
+
+@utility animate-delay-200 {
+  animation-delay: 0.2s;
+}
+
+@utility animate-delay-300 {
+  animation-delay: 0.3s;
+}
+
+@utility animate-delay-400 {
+  animation-delay: 0.4s;
 }

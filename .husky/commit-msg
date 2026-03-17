@@ -1,0 +1,18 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Valide le format Conventional Commits
+commit_msg=$(cat "$1")
+pattern="^(feat|fix|docs|style|refactor|test|chore|perf)(\([a-z-]+\))?: .{1,100}$"
+
+if ! echo "$commit_msg" | grep -qE "$pattern"; then
+  echo "❌ Format de commit invalide !"
+  echo "   Format requis : type(scope): description"
+  echo "   Exemples valides :"
+  echo "     feat(tracking): add parcel search by code"
+  echo "     fix(calculator): correct weight rounding"
+  echo "     docs(readme): update setup instructions"
+  exit 1
+fi
+
+echo "✅ Format de commit valide"
