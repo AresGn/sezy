@@ -69,6 +69,8 @@ export const metadata: Metadata = {
   },
 }
 
+export const dynamic = 'force-dynamic'
+
 // Schema.org LocalBusiness pour Google Maps (JSON-LD)
 const localBusinessJsonLd = {
   '@context': 'https://schema.org',
