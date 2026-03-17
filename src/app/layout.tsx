@@ -41,7 +41,7 @@ export default function RootLayout({
       lang="fr"
       className={`${inter.variable} ${montserrat.variable} ${jetbrainsMono.variable}`}
     >
-      <body className="font-sans text-slate-700 bg-white antialiased">
+      <body className="font-sans text-slate-700 bg-white antialiased overflow-x-hidden">
         <div className="flex flex-col min-h-screen">
           <Header />
           <main className="flex-grow">{children}</main>
