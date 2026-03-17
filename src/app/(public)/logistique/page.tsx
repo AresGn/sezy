@@ -15,6 +15,8 @@ export const metadata: Metadata = {
     'Bénéficiez du service logistique le plus rapide entre la France et le Bénin. Calendrier des vols, simulateur de prix et réservation WhatsApp.',
 }
 
+export const dynamic = 'force-dynamic'
+
 /**
  * Page Pôle Logistique (Route Group public)
  *
