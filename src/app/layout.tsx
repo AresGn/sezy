@@ -39,10 +39,10 @@ export default function RootLayout({
   return (
     <html
       lang="fr"
-      className={`${inter.variable} ${montserrat.variable} ${jetbrainsMono.variable}`}
+      className={`${inter.variable} ${montserrat.variable} ${jetbrainsMono.variable} overflow-x-hidden`}
     >
-      <body className="font-sans text-slate-700 bg-white antialiased overflow-x-hidden">
-        <div className="flex flex-col min-h-screen">
+      <body className="relative font-sans text-slate-700 bg-white antialiased overflow-x-hidden">
+        <div className="flex flex-col min-h-screen relative w-full overflow-hidden">
           <Header />
           <main className="flex-grow">{children}</main>
           <Footer />
