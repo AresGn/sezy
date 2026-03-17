@@ -1,11 +1,14 @@
 // src/middleware.ts
 /**
- * Middleware de sécurité SEZY
- * Protège les routes /admin et gère la session NextAuth
+ * Middleware de sécurité SEZY — Version Edge-compatible
+ * Protège les routes /admin et gère la session NextAuth sans charger Prisma.
  */
 import { NextResponse } from 'next/server'
+import NextAuth from 'next-auth'
 
-import { auth } from '@/lib/auth'
+import { authConfig } from '@/auth.config'
+
+const { auth } = NextAuth(authConfig)
 
 export default auth(req => {
   const isLoggedIn = !!req.auth
@@ -27,7 +30,6 @@ export default auth(req => {
   return NextResponse.next()
 })
 
-// Configurer les routes sur lesquelles le middleware s'applique
 export const config = {
   matcher: ['/admin/:path*', '/login'],
 }

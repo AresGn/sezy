@@ -5,8 +5,14 @@ import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 
 import { db } from '@/lib/db'
+import { authConfig } from '@/auth.config'
 
+/**
+ * Configuration complète de NextAuth pour les Server Components et l'API.
+ * Utilise l'adaptateur Prisma et la logique de validation bcrypt.
+ */
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   adapter: PrismaAdapter(db),
   providers: [
     Credentials({
@@ -18,8 +24,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) return null
 
-        // Simuler un login admin pour SEZY
-        // En prod, on chercherait l'admin dans la DB
         if (credentials.email === process.env.ADMIN_EMAIL) {
           const isValid = await bcrypt.compare(
             credentials.password as string,
@@ -34,19 +38,4 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       },
     }),
   ],
-  pages: {
-    signIn: '/login',
-  },
-  callbacks: {
-    authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user
-      const isOnAdmin = nextUrl.pathname.startsWith('/admin')
-
-      if (isOnAdmin) {
-        if (isLoggedIn) return true
-        return false // Redirige vers login
-      }
-      return true
-    },
-  },
 })
