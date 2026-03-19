@@ -24,6 +24,20 @@ export interface ParcelWithDetails {
   receivedAt: Date
   createdAt: Date
   updatedAt: Date
+  flight?: {
+    id: string
+    direction: string
+    departureDate: Date
+    arrivalDate: Date
+    origin: string
+    destination: string
+  } | null
+  statusLogs?: {
+    id: string
+    status: string
+    note: string | null
+    loggedAt: Date
+  }[]
 }
 
 /**

@@ -74,7 +74,7 @@ export async function createProduct(data: {
       category: data.category,
       imageUrl: data.imageUrl,
       inStock: data.inStock ?? true,
-      stockQuantity: data.stockQuantity || null,
+      stockQuantity: data.stockQuantity,
       isFeatured: data.isFeatured ?? false,
       isActive: data.isActive ?? true,
     },

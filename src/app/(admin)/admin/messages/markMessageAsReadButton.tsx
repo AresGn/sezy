@@ -31,7 +31,9 @@ export async function markMessageAsReadAction(messageId: string) {
 
     revalidatePath('/admin')
     revalidatePath('/admin/messages')
+    return { success: true }
   } catch (error) {
     console.error('Erreur markMessageAsRead:', error)
+    return { success: false, error: 'DATABASE_ERROR' }
   }
 }

@@ -4,7 +4,7 @@
  * Vérifie createProductAction, updateProductAction
  * Couverture: nominal, validation Zod, CONFLICT (slug unique), UNAUTHORIZED
  */
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 
 // ─────────────────────────────────────────────────────────────
 // MOCKS - Utilise vi.hoisted pour éviter les erreurs de declaration

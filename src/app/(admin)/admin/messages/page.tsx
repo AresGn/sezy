@@ -108,7 +108,11 @@ export default async function AdminMessagesPage() {
                   </div>
                 </div>
                 {!message.isRead && (
-                  <form action={markMessageAsReadAction.bind(null, message.id)}>
+                  <form
+                    action={async (_formData: FormData) => {
+                      await markMessageAsReadAction(message.id)
+                    }}
+                  >
                     <button
                       type="submit"
                       className="flex items-center gap-2 px-3 py-2 text-sm text-sezy-navy border border-sezy-navy rounded-lg hover:bg-sezy-navy hover:text-white transition-colors"

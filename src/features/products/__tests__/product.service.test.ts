@@ -83,7 +83,7 @@ describe('product.service', () => {
       category: 'COSMETICS' as const,
       imageUrl: 'https://example.com/creme.jpg',
       inStock: true,
-      stockQuantity: null,
+      stockQuantity: undefined,
       isFeatured: false,
       isActive: true,
     }

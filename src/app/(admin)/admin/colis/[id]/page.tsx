@@ -134,7 +134,7 @@ export default async function AdminColisDetailPage({ params }: PageProps) {
           </div>
 
           {/* Historique des statuts */}
-          {parcel.statusLogs.length > 0 && (
+          {parcel.statusLogs && parcel.statusLogs.length > 0 && (
             <div className="bg-white rounded-card shadow-card border border-gray-100 p-6">
               <h3 className="text-lg font-semibold text-sezy-navy mb-4">Historique des statuts</h3>
               <div className="space-y-4">
