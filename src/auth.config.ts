@@ -12,7 +12,21 @@ export const authConfig = {
   session: {
     strategy: 'jwt',
   },
+  secret: process.env.AUTH_SECRET,
   callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id
+      }
+      return token
+    },
+    async session({ session, token }) {
+      if (token && session.user) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(session.user as any).id = token.id as string
+      }
+      return session
+    },
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user
       const isOnAdmin = nextUrl.pathname.startsWith('/admin')
