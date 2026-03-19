@@ -11,12 +11,10 @@
 
 import { useState } from 'react'
 import { signIn } from 'next-auth/react'
-import { useRouter } from 'next/navigation'
 import { ArrowRight, Loader2, AlertCircle, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 
 export default function LoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -40,11 +38,8 @@ export default function LoginPage() {
         setLoading(false)
       } else {
         setSuccess(true)
-        // Petit délai pour afficher le succès avant redirection
-        setTimeout(() => {
-          router.push('/admin')
-          router.refresh()
-        }, 800)
+        // Redirection plus robuste
+        window.location.href = '/admin'
       }
     } catch {
       setError('Une erreur technique est survenue. Réessayez plus tard.')
