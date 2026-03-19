@@ -2,9 +2,6 @@ import type { Metadata } from 'next'
 import { Inter, Montserrat, JetBrains_Mono } from 'next/font/google'
 
 import './globals.css'
-import Header from '@/components/layout/Header'
-import Footer from '@/components/layout/Footer'
-import ScrollToTop from '@/components/ui/ScrollToTop'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -42,12 +39,7 @@ export default function RootLayout({
       className={`${inter.variable} ${montserrat.variable} ${jetbrainsMono.variable} overflow-x-hidden`}
     >
       <body className="relative font-sans text-slate-700 bg-white antialiased overflow-x-hidden">
-        <div className="flex flex-col min-h-screen relative w-full overflow-hidden">
-          <Header />
-          <main className="flex-grow">{children}</main>
-          <Footer />
-          <ScrollToTop />
-        </div>
+        <div className="flex flex-col min-h-screen relative w-full overflow-hidden">{children}</div>
       </body>
     </html>
   )

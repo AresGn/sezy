@@ -22,6 +22,21 @@ export const TrackingSearchSchema = z.object({
 
 export type TrackingSearchInput = z.infer<typeof TrackingSearchSchema>
 
+// Schema pour la création/modification d'un colis (Admin)
+export const ParcelSchema = z.object({
+  trackingCode: z.string().min(1, 'Code de suivi requis'),
+  senderName: z.string().min(2, 'Nom expéditeur requis'),
+  senderPhone: z.string().min(8, 'Téléphone expéditeur invalide'),
+  recipientName: z.string().min(2, 'Nom destinataire requis'),
+  recipientPhone: z.string().min(8, 'Téléphone destinataire invalide'),
+  weightKg: z.coerce.number().min(0.1, 'Poids invalide'),
+  status: z.nativeEnum(ParcelStatus).default(ParcelStatus.RECEIVED_PARIS),
+  currentNote: z.string().optional().nullable(),
+  flightId: z.string().optional().nullable(),
+})
+
+export type ParcelInput = z.infer<typeof ParcelSchema>
+
 /**
  * Sous-entité: Vol associé au colis
  */

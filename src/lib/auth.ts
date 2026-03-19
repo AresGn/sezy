@@ -1,6 +1,5 @@
 // src/lib/auth.ts
 import NextAuth from 'next-auth'
-import { PrismaAdapter } from '@auth/prisma-adapter'
 import Credentials from 'next-auth/providers/credentials'
 import bcrypt from 'bcryptjs'
 
@@ -8,12 +7,11 @@ import { db } from '@/lib/db'
 import { authConfig } from '@/auth.config'
 
 /**
- * Configuration complète de NextAuth pour les Server Components et l'API.
- * Utilise l'adaptateur Prisma et la logique de validation bcrypt.
+ * Configuration NextAuth pour SEZY - Admin uniquement via credentials.
+ * Authentification via la table Admin dans PostgreSQL.
  */
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
-  adapter: PrismaAdapter(db),
   providers: [
     Credentials({
       name: 'Credentials',
@@ -22,20 +20,46 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null
+        const email = credentials?.email as string | undefined
+        const password = credentials?.password as string | undefined
 
-        if (credentials.email === process.env.ADMIN_EMAIL) {
-          const isValid = await bcrypt.compare(
-            credentials.password as string,
-            process.env.ADMIN_PASSWORD_HASH!,
-          )
+        if (!email || !password) return null
+
+        try {
+          // DOC 07: Validation contre la base de données
+          const admin = await db.admin.findUnique({
+            where: { email, isActive: true },
+          })
+
+          if (!admin) return null
+
+          // Vérifier le mot de passe
+          const isValid = await bcrypt.compare(password, admin.passwordHash)
+
           if (isValid) {
-            return { id: 'admin', email: process.env.ADMIN_EMAIL, name: 'Admin SEZY' }
-          }
-        }
+            // Mettre à jour lastLoginAt
+            await db.admin.update({
+              where: { id: admin.id },
+              data: { lastLoginAt: new Date() },
+            })
 
-        return null
+            return {
+              id: admin.id,
+              email: admin.email,
+              name: admin.name,
+            }
+          }
+
+          return null
+        } catch (error) {
+          console.error("[AUTH] Erreur lors de l'authentification:", error)
+          return null
+        }
       },
     }),
   ],
+  session: {
+    strategy: 'jwt',
+    maxAge: 24 * 60 * 60, // 24 heures
+  },
 })

@@ -4,8 +4,8 @@ import '@testing-library/jest-dom'
 import { vi } from 'vitest'
 
 // Mock des variables d'environnement pour les tests
-process.env.NEXT_PUBLIC_WHATSAPP_1 = '+22901042087361'
-process.env.NEXT_PUBLIC_WHATSAPP_2 = '+22901066386417'
+process.env.NEXT_PUBLIC_WHATSAPP_1 = '+22900000000'
+process.env.NEXT_PUBLIC_WHATSAPP_2 = '+22900000000'
 process.env.NEXT_PUBLIC_SITE_URL = 'http://localhost:3000'
 
 // Mock de next/navigation
@@ -20,6 +20,13 @@ vi.mock('next/navigation', () => ({
 vi.mock('next-auth', () => ({
   default: vi.fn(),
   auth: vi.fn().mockResolvedValue(null),
+}))
+
+// Mock de @/lib/auth
+vi.mock('@/lib/auth', () => ({
+  auth: vi.fn().mockResolvedValue(null),
+  signIn: vi.fn(),
+  signOut: vi.fn(),
 }))
 
 // Mock de next/image (pour les tests composants)
@@ -39,6 +46,7 @@ vi.mock('@/lib/db', () => ({
       create: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
+      count: vi.fn(),
     },
     parcel: {
       findFirst: vi.fn(),
@@ -46,6 +54,7 @@ vi.mock('@/lib/db', () => ({
       findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+      count: vi.fn(),
     },
     parcelStatusLog: { create: vi.fn() },
     product: {
@@ -53,7 +62,20 @@ vi.mock('@/lib/db', () => ({
       findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+      count: vi.fn(),
     },
-    contactMessage: { create: vi.fn() },
+    contactMessage: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+      count: vi.fn(),
+    },
   },
+}))
+
+// Mock de next/cache pour les Server Actions
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
 }))
