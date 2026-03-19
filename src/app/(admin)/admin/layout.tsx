@@ -26,10 +26,8 @@ interface AdminLayoutProps {
 export default async function AdminLayout({ children }: AdminLayoutProps) {
   const session = await auth()
 
-  // Protection supplémentaire : seul l'admin peut accéder
-  // Note: auth.ts utilise db, donc on pourrait vérifier le rôle en DB ici aussi si besoin
-  // Mais la vérification email via env est une sécurité rapide supplémentaire
-  if (!session?.user || session.user.email !== process.env.ADMIN_EMAIL) {
+  // Protection supplémentaire : Seul un utilisateur connecté peut accéder
+  if (!session?.user) {
     redirect('/auth/login')
   }
 

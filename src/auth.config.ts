@@ -12,11 +12,13 @@ export const authConfig = {
   session: {
     strategy: 'jwt',
   },
-  secret: process.env.AUTH_SECRET,
+  // On accepte les deux noms de variables pour être sûr
+  secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
+        token.email = user.email
       }
       return token
     },
@@ -28,12 +30,12 @@ export const authConfig = {
       return session
     },
     authorized({ auth, request: { nextUrl } }) {
-      const isLoggedIn = !!auth?.user
+      // MODIF : On vérifie juste si l'objet auth existe (le JWT est valide)
+      const isLoggedIn = !!auth
       const isOnAdmin = nextUrl.pathname.startsWith('/admin')
 
       if (isOnAdmin) {
-        if (isLoggedIn) return true
-        return false // Redirige vers login
+        return isLoggedIn // true = accès, false = redirection vers login
       }
       return true
     },
