@@ -11,7 +11,10 @@ import { Pool } from 'pg'
 
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient }
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL! })
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL!,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+})
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const adapter = new PrismaPg(pool as any)
 

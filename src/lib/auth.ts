@@ -23,20 +23,31 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const email = credentials?.email as string | undefined
         const password = credentials?.password as string | undefined
 
-        if (!email || !password) return null
+        console.log('[AUTH] Tentative de connexion pour:', email)
+
+        if (!email || !password) {
+          console.log('[AUTH] Email ou mot de passe manquant')
+          return null
+        }
 
         try {
           // DOC 07: Validation contre la base de données
+          console.log("[AUTH] Recherche de l'admin dans la DB...")
           const admin = await db.admin.findUnique({
             where: { email, isActive: true },
           })
 
-          if (!admin) return null
+          if (!admin) {
+            console.log('[AUTH] Admin non trouvé ou inactif pour email:', email)
+            return null
+          }
 
+          console.log('[AUTH] Admin trouvé, vérification du mot de passe...')
           // Vérifier le mot de passe
           const isValid = await bcrypt.compare(password, admin.passwordHash)
 
           if (isValid) {
+            console.log('[AUTH] Mot de passe valide. Connexion réussie.')
             // Mettre à jour lastLoginAt
             await db.admin.update({
               where: { id: admin.id },
@@ -50,9 +61,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             }
           }
 
+          console.log('[AUTH] Mot de passe invalide')
           return null
         } catch (error) {
-          console.error("[AUTH] Erreur lors de l'authentification:", error)
+          console.error("[AUTH] Erreur CRITIQUE lors de l'authentification:", error)
           return null
         }
       },
